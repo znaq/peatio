@@ -62,8 +62,21 @@ module API
           present order, with: API::V2::Entities::Order, type: :full
         end
 
-        desc 'Create a Sell/Buy order.',
+        desc 'Legacy create a Sell/Buy order.',
           success: API::V2::Entities::Order
+        params do
+          use :market, :order
+        end
+        post '/orders/legacy' do
+          if params[:ord_type] == 'market' && params.key?(:price)
+            error!({ errors: ['market.order.market_order_price'] }, 422)
+          end
+          order = create_order(params)
+          present order, with: API::V2::Entities::Order
+        end
+
+        desc 'New Sell/Buy order API with advanced order types support.',
+             success: API::V2::Entities::Order
         params do
           use :market, :order
         end
@@ -71,7 +84,7 @@ module API
           if params[:ord_type] == 'market' && params.key?(:price)
             error!({ errors: ['market.order.market_order_price'] }, 422)
           end
-          order = create_order(params)
+          order = create_order2(params)
           present order, with: API::V2::Entities::Order
         end
 

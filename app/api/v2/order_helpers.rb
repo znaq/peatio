@@ -38,6 +38,22 @@ module API
         error!({ errors: [message] }, 422)
       end
 
+      def create_order2(attrs)
+        create_order_errors = {
+          ::Account::AccountError => 'market.account.insufficient_balance',
+          ::Order::InsufficientMarketLiquidity => 'market.order.insufficient_market_liquidity',
+          ActiveRecord::RecordInvalid => 'market.order.invalid_volume_or_price'
+        }
+
+        order = build_order(attrs)
+        submit_order(order)
+        order
+      rescue => e
+        message = create_order_errors.fetch(e.class, 'market.order.create_error')
+        report_exception_to_screen(e)
+        error!({ errors: [message] }, 422)
+      end
+
       def submit_order(order)
         order.fix_number_precision # number must be fixed before computing locked
         order.locked = order.origin_locked = order.compute_locked
