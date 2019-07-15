@@ -29,10 +29,17 @@ module API
                    desc: -> { API::V2::Entities::Currency.documentation[:type][:desc] }
         end
         get '/currencies' do
-          currencies = Currency.enabled
-          currencies = currencies.where(type: params[:type]).includes(:blockchain) if params[:type] == 'coin'
-          currencies = currencies.where(type: params[:type]) if params[:type] == 'fiat'
-          present currencies.ordered, with: API::V2::Entities::Currency
+          currencies = Rails.cache.fetch('currencies') do
+            if params[:type] == 'coin'
+              Currency.enabled.where(type: params[:type]).includes(:blockchain).ordered
+            elsif params[:type] == 'fiat'
+              Currency.enabled.where(type: params[:type]).ordered
+            else
+              Currency.enabled.ordered
+            end
+          end
+
+          present currencies, with: API::V2::Entities::Currency
         end
       end
     end

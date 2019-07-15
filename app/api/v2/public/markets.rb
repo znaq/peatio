@@ -14,7 +14,11 @@ module API
             is_array: true,
             success: API::V2::Entities::Market
           get "/" do
-            present ::Market.enabled.ordered, with: API::V2::Entities::Market
+            markets = Rails.cache.fetch('markets') do
+              ::Market.enabled.ordered
+            end
+
+            present markets, with: API::V2::Entities::Market
           end
 
           desc 'Get the order book of specified market.',
