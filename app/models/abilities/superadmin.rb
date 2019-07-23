@@ -8,6 +8,7 @@ module Abilities
     def initialize
       can :read, Order
       can :read, Trade
+      can :read, Job
 
       can :manage, Member
       can :manage, Deposit
@@ -25,6 +26,7 @@ module Abilities
       can :manage, Account
       can :manage, Wallet
       can :manage, PaymentAddress
+      can :manage, Job
     end
   end
 end

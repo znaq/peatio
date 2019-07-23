@@ -1,0 +1,51 @@
+<div class="row">
+  <div class="col-6">
+    <h3>Jobs</h3>
+  </div>
+  <% if can? :create, Job %>
+    <div class="col-6">
+      <%= link_to 'Trigger', admin_jobs_trigger_path, class: "btn btn-primary float-right mb-3" %>
+    </div>
+  <% end %>
+</div>
+
+<% if can? :read, Job %>
+  <div class="card">
+    <%= table_for @jobs, class: 'table table-condensed table-striped' do |t| %>
+      <% t.column 'ID' do |j| %>
+        <%= j.id %>
+      <% end %>
+
+      <% t.column 'Name' do |j| %>
+        <code class="text-info">
+          <%= j.name.capitalize %>
+        </code>
+      <% end %>
+
+      <% t.column 'Rows Affected' do |j| %>
+        <%= j.rows %>
+      <% end %>
+
+      <% t.column 'State' do |j| %>
+        <% if j.failed? %>
+          <strong class="text-danger"><%= j.state.capitalize %></strong>
+        <% elsif j.succeed? %>
+          <strong class="text-success"><%= j.state.capitalize %></strong>
+        <% else %>
+          %= j.state.capitalize %>
+        <% end %>
+      <% end %>
+
+      <% t.column 'Updated at' do |j| %>
+        <%= l(j.updated_at, format: :long) %>
+      <% end %>
+
+      <% t.column 'Created at' do |j| %>
+        <%= l(j.created_at, format: :long) %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="mx-auto" style="width: 200px;">
+    <%= paginate @jobs %>
+  </div>
+<% end %>

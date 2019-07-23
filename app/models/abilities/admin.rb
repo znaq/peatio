@@ -23,6 +23,7 @@ module Abilities
       can :manage, Currency
       can :manage, Blockchain
       can :manage, Wallet
+      can :manage, Job
 
       can :read, Account
       can :read, PaymentAddress
