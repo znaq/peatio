@@ -9,7 +9,6 @@ module Abilities
       can :read, Order
       can :read, Trade
       can :read, Member
-      can :read, Job
 
       can :manage, Deposit
       can :manage, Withdraw
@@ -24,6 +23,7 @@ module Abilities
       can :manage, Currency
       can :manage, Blockchain
       can :manage, Wallet
+      can :manage, Job
 
       can :read, Account
       can :read, PaymentAddress

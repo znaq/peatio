@@ -17,12 +17,12 @@ module Abilities
       can :read, Withdraw
       can :read, Account
       can :read, PaymentAddress
-      can :read, Job
 
       can :manage, Market
       can :manage, Currency
       can :manage, Blockchain
       can :manage, Wallet
+      can :manage, Job
     end
   end
 end

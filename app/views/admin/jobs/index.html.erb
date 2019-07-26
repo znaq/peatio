@@ -1,8 +1,15 @@
-<% if can? :read, Job %>
-  <%= form_for @job, url: admin_jobs_path do |f| %>
-    <%= f.submit 'Trigger', class: 'btn btn-primary btn-lg mt-3' %>
+<div class="row">
+  <div class="col-6">
+    <h3>Jobs</h3>
+  </div>
+  <% if can? :create, Job %>
+    <div class="col-6">
+      <%= link_to 'Trigger', admin_jobs_trigger_path, class: "btn btn-primary float-right mb-3" %>
+    </div>
   <% end %>
+</div>
 
+<% if can? :read, Job %>
   <div class="card">
     <%= table_for @jobs, class: 'table table-condensed table-striped' do |t| %>
       <% t.column 'ID' do |j| %>
