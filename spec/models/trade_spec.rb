@@ -110,6 +110,13 @@ describe Trade, '#record_complete_operations!' do
     }.by(bid_currency_fee)
   end
 
+  it 'credits gross account' do
+    gross_revenues_account_codes = Operations::Account.where(type: :revenue, kind: :gross).pluck(:code)
+    expect{ subject.record_complete_operations! }.to change {
+      Operations::Revenue.where(code: gross_revenues_account_codes).count
+    }.by(2)
+  end
+
   it 'creates ask currency revenue from bid creator' do
     expect{ subject.record_complete_operations! }.to change {
       Operations::Revenue.where(currency: ask.currency, member: bid.member).count
@@ -121,4 +128,5 @@ describe Trade, '#record_complete_operations!' do
       Operations::Revenue.where(currency: bid.currency, member: ask.member).count
     }.by(1)
   end
+
 end

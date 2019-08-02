@@ -76,6 +76,24 @@ FactoryBot.define do
       scope         { :platform }
     end
 
+    trait '311' do
+      code          { 311 }
+      type          { :revenue }
+      kind          { :gross }
+      currency_type { :fiat }
+      description   { 'Gross Fiat Revenues Account' }
+      scope         { :platform }
+    end
+
+    trait '312' do
+      code          { 312 }
+      type          { :revenue }
+      kind          { :gross }
+      currency_type { :coin }
+      description   { 'Gross Crypto Revenues Account' }
+      scope         { :platform }
+    end
+
     trait '401' do
       code          { 401 }
       type          { :expense }

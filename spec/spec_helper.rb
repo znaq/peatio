@@ -90,7 +90,10 @@ RSpec.configure do |config|
         btc_hot btc_deposit ].each { |ccy| FactoryBot.create(:wallet, ccy) }
 
     %i[btcusd btceth].each { |market| FactoryBot.create(:market, market) }
-    %w[101 102 201 202 211 212 301 302 401 402].each { |ac_code| FactoryBot.create(:operations_account, ac_code)}
+    %w[101 102
+       201 202 211 212
+       301 302 311 312
+       401 402].each { |ac_code| FactoryBot.create(:operations_account, ac_code)}
   end
 
   config.after(:each) do
