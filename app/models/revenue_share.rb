@@ -20,7 +20,7 @@
 #
 # For member 5:
 #   25% (2_500/10_000 = 25%) of trading fees will be paid to member with id 4.
-#   75% (100% - 20% - 5%)    of trading fees will be paid to platform.
+#   75% (100% - 25%)         of trading fees will be paid to platform.
 #
 # For member 7:
 #   0% (state is disabled)   of trading fees will be paid to member with id 6.
