@@ -84,4 +84,9 @@ class Operation < ApplicationRecord
       end
     end
   end
+
+  # Returns operation amount with sign.
+  def amount
+    credit.zero? ? -debit : credit
+  end
 end
