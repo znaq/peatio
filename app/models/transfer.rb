@@ -41,11 +41,9 @@ class Transfer < ApplicationRecord
 
   # == Instance Methods =====================================================
 
-  private
-
   def update_legacy_balances
     liabilities.where.not(member_id: nil).find_each do |l|
-      member = Member.find_by!(l.member_id)
+      member = Member.find(l.member_id)
       account = l.account
       legacy_account = member.accounts.find_by(currency: l.currency)
 
@@ -65,6 +63,8 @@ class Transfer < ApplicationRecord
       end
     end
   end
+
+  private
 
   # For validating Accounting Equation we use next formula:
   # Assets - Liabilities = Revenues - Expenses
