@@ -134,8 +134,8 @@ ActiveRecord::Schema.define(version: 2019_08_07_092706) do
     t.string "quote_unit", limit: 10, null: false
     t.integer "amount_precision", limit: 1, default: 4, null: false
     t.integer "price_precision", limit: 1, default: 4, null: false
-    t.decimal "ask_fee", precision: 17, scale: 16, default: "0.0", null: false
-    t.decimal "bid_fee", precision: 17, scale: 16, default: "0.0", null: false
+    t.decimal "maker_fee", precision: 17, scale: 16, default: "0.0", null: false
+    t.decimal "taker_fee", precision: 17, scale: 16, default: "0.0", null: false
     t.decimal "min_price", precision: 32, scale: 16, default: "0.0", null: false
     t.decimal "max_price", precision: 32, scale: 16, default: "0.0", null: false
     t.decimal "min_amount", precision: 32, scale: 16, default: "0.0", null: false
@@ -183,7 +183,8 @@ ActiveRecord::Schema.define(version: 2019_08_07_092706) do
     t.decimal "price", precision: 32, scale: 16
     t.decimal "volume", precision: 32, scale: 16, null: false
     t.decimal "origin_volume", precision: 32, scale: 16, null: false
-    t.decimal "fee", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "maker_fee", precision: 17, scale: 16, default: "0.0", null: false
+    t.decimal "taker_fee", precision: 17, scale: 16, default: "0.0", null: false
     t.integer "state", null: false
     t.string "type", limit: 8, null: false
     t.integer "member_id", null: false
