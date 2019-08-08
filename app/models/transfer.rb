@@ -23,23 +23,17 @@ class Transfer < ApplicationRecord
   validates :kind, presence: true
   validate :validate_accounting_equation
 
+  after_create :update_legacy_balances
+
   # == Scopes ===============================================================
 
   # == Callbacks ============================================================
 
   # == Class Methods ========================================================
 
-  class << self
-    # TODO: Rename
-    def do_transfer!(attributes)
-      Transfer.transaction do
-        transfer = Transfer.create!(attributes)
-        transfer.update_legacy_balances
-      end
-    end
-  end
-
   # == Instance Methods =====================================================
+
+  private
 
   def update_legacy_balances
     liabilities.where.not(member_id: nil).find_each do |l|
@@ -63,8 +57,6 @@ class Transfer < ApplicationRecord
       end
     end
   end
-
-  private
 
   # For validating Accounting Equation we use next formula:
   # Assets - Liabilities = Revenues - Expenses

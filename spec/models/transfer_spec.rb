@@ -139,13 +139,15 @@ describe Transfer do
           # (30 + 45 - 12) - (9 + 12 - 2) = (28 + 20 - 2) - (1 + 4 - 3)
           # 63 - 19 = 46 - 2
           # BTC accounting is correct.
+          let(:member1) { create(:member, :level_3).tap { |m| m.accounts.each { |a| a.plus_funds(50.0) } } }
+
           let(:asset1) { build(:asset, credit: 30, currency: currency_btc) }
           let(:asset2) { build(:asset, credit: 45, currency: currency_btc) }
           let(:asset3) { build(:asset, :debit, debit: 12, currency: currency_btc) }
 
           let(:liability1) { build(:liability, :with_member, credit: 9, currency: currency_btc) }
           let(:liability2) { build(:liability, :with_member, credit: 12, currency: currency_btc) }
-          let(:liability3) { build(:liability, :debit, :with_member, debit: 2, currency: currency_btc) }
+          let(:liability3) { build(:liability, :debit, :with_member, debit: 2, member: member1, currency: currency_btc) }
 
           let(:revenue1) { build(:revenue, credit: 28, currency: currency_btc) }
           let(:revenue2) { build(:revenue, credit: 20, currency: currency_btc) }
@@ -171,7 +173,7 @@ describe Transfer do
 
   context 'do_transafer!' do
     subject do
-      Transfer.do_transfer!(attributes_for(:transfer,
+      Transfer.create!(attributes_for(:transfer,
                                            liabilities: liabilities,
                                            assets: assets,
                                            revenues: revenues,

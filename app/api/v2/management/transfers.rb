@@ -83,10 +83,7 @@ module API
             end
           end
 
-          Transfer.do_transfer!(attrs)
-
-          present Transfer.find_by!(key: declared_params[:key]),
-                  with: Entities::Transfer
+          present Transfer.create!(attrs), with: Entities::Transfer
           status 200
         rescue ActiveRecord::RecordInvalid => e
           body errors: e.message
