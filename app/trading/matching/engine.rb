@@ -125,7 +125,7 @@ module Matching
 
     def publish(order, counter_order, trade)
       ask, bid = order.type == :ask ? [order, counter_order] : [counter_order, order]
-
+      maker_order, taker_order = ask.id < bid.id ? [ask, bid] : [bid, ask]
       # Rounding is forbidden in this step because it can cause difference
       # between amount/funds in DB and orderbook.
       price  = trade[0]
@@ -136,11 +136,11 @@ module Matching
 
       @queue.enqueue(:trade_executor,
                      { market_id: @market.id,
-                       ask_id: ask.id,
-                       bid_id: bid.id,
+                       maker_order_id: maker_order.id,
+                       taker_order_id: taker_order.id,
                        strike_price: price,
                        volume: volume,
-                       funds: funds },
+                       total: funds },
                      { persistent: false })
     end
 

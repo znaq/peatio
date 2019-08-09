@@ -8,12 +8,12 @@ class Trade < ApplicationRecord
 
   enumerize :trend, in: { up: 1, down: 0 }
 
-  belongs_to :ask, class_name: 'OrderAsk', foreign_key: :ask_id, required: true
-  belongs_to :bid, class_name: 'OrderBid', foreign_key: :bid_id, required: true
-  belongs_to :ask_member, class_name: 'Member', foreign_key: :ask_member_id, required: true
-  belongs_to :bid_member, class_name: 'Member', foreign_key: :bid_member_id, required: true
+  belongs_to :maker_order, class_name: 'Order', foreign_key: :maker_order_id, required: true
+  belongs_to :taker_order, class_name: 'Order', foreign_key: :taker_order_id, required: true
+  belongs_to :maker, class_name: 'Member', foreign_key: :maker_id, required: true
+  belongs_to :taker, class_name: 'Member', foreign_key: :taker_id, required: true
 
-  validates :price, :volume, :funds, numericality: { greater_than_or_equal_to: 0.to_d }
+  validates :price, :amount, :total, numericality: { greater_than_or_equal_to: 0.to_d }
 
   scope :h24, -> { where('created_at > ?', 24.hours.ago) }
 
@@ -30,51 +30,43 @@ class Trade < ApplicationRecord
     end
   end
 
-  def taker
-    ask_id > bid_id ? ask : bid
-  end
-
   def order_fee(order)
-    if ask.id == order.id
-      ask == taker ? ask.taker_fee : ask.maker_fee
-    elsif bid.id == order.id
-      bid == taker ? bid.taker_fee : bid.maker_fee
-    end
+    maker_order_id == order.id ? order.maker_fee : order.taker_fee
   end
 
   def side(member)
     return unless member
 
-    self.ask_member_id == member.id ? 'ask' : 'bid'
+    if member.id == maker_id
+      maker_order
+    elsif member.id == taker_id
+      taker_order
+    end
   end
 
   def for_notify(member = nil)
-    payload = { id:             id,
-                side:           side(member),
-                kind:           side(member),
-                price:          price.to_s  || ZERO,
-                volume:         volume.to_s || ZERO,
-                market:         market.id,
-                at:             created_at.to_i,
-                created_at:     created_at.to_i }
-    if side(member) == 'ask'
-      payload[:ask_id] = ask_id
-    else
-      payload[:bid_id] = bid_id
-    end
-    payload
+    { id:             id,
+      side:           side(member).side,
+      kind:           side(member),
+      price:          price.to_s  || ZERO,
+      amount:         amount.to_s || ZERO,
+      market:         market.id,
+      at:             created_at.to_i,
+      created_at:     created_at.to_i,
+      order_id:       side(member).id }
   end
 
   def for_global
     { tid:        id,
-      taker_type: ask_id > bid_id ? :sell : :buy,
+      taker_type: taker_order.side,
       date:       created_at.to_i,
       price:      price.to_s || ZERO,
-      amount:     volume.to_s || ZERO }
+      amount:     amount.to_s || ZERO }
   end
 
   def record_complete_operations!
     transaction do
+
       record_liability_debit!
       record_liability_credit!
       record_liability_transfer!
@@ -84,55 +76,56 @@ class Trade < ApplicationRecord
 
   private
   def record_liability_debit!
-    seller_currency_outcome = volume
-    buyer_currency_outcome = funds
+    sell, buy = maker_order.side == 'sell' ? [maker_order, taker_order] : [taker_order, maker_order]
+    seller_currency_outcome = amount
+    buyer_currency_outcome = total
 
     # Debit locked fiat/crypto Liability account for member who created ask.
     Operations::Liability.debit!(
       amount:    seller_currency_outcome,
-      currency:  ask.currency,
+      currency:  sell.currency,
       reference: self,
       kind:      :locked,
-      member_id: ask.member_id,
+      member_id: sell.member_id,
     )
     # Debit locked fiat/crypto Liability account for member who created bid.
     Operations::Liability.debit!(
       amount:    buyer_currency_outcome,
-      currency:  bid.currency,
+      currency:  buy.currency,
       reference: self,
       kind:      :locked,
-      member_id: bid.member_id,
+      member_id: buy.member_id,
     )
   end
 
   def record_liability_credit!
-    # Fees are related to order type Maker or Taker (not currency).
-    seller_currency_income = volume - volume * order_fee(bid)
-    buyer_currency_income = funds - funds * order_fee(ask)
+    sell, buy = maker_order.side == 'sell' ? [maker_order, taker_order] : [taker_order, maker_order]
+    seller_currency_income = amount - amount * order_fee(buy)
+    buyer_currency_income = total - total * order_fee(sell)
 
 
     # Credit main fiat/crypto Liability account for member who created ask.
     Operations::Liability.credit!(
       amount:    buyer_currency_income,
-      currency:  bid.currency,
+      currency:  buy.currency,
       reference: self,
       kind:      :main,
-      member_id: ask.member_id
+      member_id: sell.member_id
     )
 
     # Credit main fiat/crypto Liability account for member who created bid.
     Operations::Liability.credit!(
       amount:    seller_currency_income,
-      currency:  ask.currency,
+      currency:  sell.currency,
       reference: self,
       kind:      :main,
-      member_id: bid.member_id
+      member_id: buy.member_id
     )
   end
 
   def record_liability_transfer!
     # Unlock unused funds.
-    [bid, ask].each do |order|
+    [maker_order, taker_order].each do |order|
       if order.volume.zero? && !order.locked.zero?
         Operations::Liability.transfer!(
           amount:    order.locked,
@@ -147,50 +140,50 @@ class Trade < ApplicationRecord
   end
 
   def record_revenues!
-    seller_currency_fee = volume * order_fee(bid)
-    buyer_currency_fee = funds * order_fee(ask)
+    sell, buy = maker_order.side == 'sell' ? [maker_order, taker_order] : [taker_order, maker_order]
+    seller_currency_fee = amount * order_fee(buy)
+    buyer_currency_fee = total * order_fee(sell)
 
     # Credit main fiat/crypto Revenue account.
     Operations::Revenue.credit!(
       amount:    seller_currency_fee,
-      currency:  ask.currency,
+      currency:  sell.currency,
       reference: self,
-      member_id: bid.member_id
+      member_id: buy.member_id
     )
 
     # Credit main fiat/crypto Revenue account.
     Operations::Revenue.credit!(
       amount:    buyer_currency_fee,
-      currency:  bid.currency,
+      currency:  buy.currency,
       reference: self,
-      member_id: ask.member_id
+      member_id: sell.member_id
     )
   end
 end
 
 # == Schema Information
-# Schema version: 20190213104708
+# Schema version: 20190730140453
 #
 # Table name: trades
 #
-#  id            :integer          not null, primary key
-#  price         :decimal(32, 16)  not null
-#  volume        :decimal(32, 16)  not null
-#  ask_id        :integer          not null
-#  bid_id        :integer          not null
-#  trend         :integer          not null
-#  market_id     :string(20)       not null
-#  ask_member_id :integer          not null
-#  bid_member_id :integer          not null
-#  funds         :decimal(32, 16)  not null
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
+#  id             :integer          not null, primary key
+#  price          :decimal(32, 16)  not null
+#  amount         :decimal(32, 16)  not null
+#  maker_order_id :integer          not null
+#  taker_order_id :integer          not null
+#  market_id      :string(20)       not null
+#  maker_id       :integer          not null
+#  taker_id       :integer          not null
+#  total          :decimal(32, 16)  not null
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
 #
 # Indexes
 #
-#  index_trades_on_ask_id                           (ask_id)
-#  index_trades_on_ask_member_id_and_bid_member_id  (ask_member_id,bid_member_id)
-#  index_trades_on_bid_id                           (bid_id)
-#  index_trades_on_created_at                       (created_at)
-#  index_trades_on_market_id_and_created_at         (market_id,created_at)
+#  index_trades_on_created_at                (created_at)
+#  index_trades_on_maker_id_and_taker_id     (maker_id,taker_id)
+#  index_trades_on_maker_order_id            (maker_order_id)
+#  index_trades_on_market_id_and_created_at  (market_id,created_at)
+#  index_trades_on_taker_order_id            (taker_order_id)
 #
