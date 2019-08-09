@@ -126,6 +126,32 @@ describe API::V2::Management::Transfers, type: :request do
       it { expect(response.body).to match(/key has already been taken/i) }
     end
 
+    context 'debit liability on account with insufficient balance' do
+      let!(:sender_member) { create(:member, :level_3) }
+      let!(:receiver_member) { create(:member, :level_3) }
+
+      let!(:deposit) { create(:deposit_btc, member: sender_member, amount: 1) }
+      let(:operation) do
+        {
+          currency: :btc,
+          amount:   1.1,
+          account_src: {
+            code: 202,
+            uid:  sender_member.uid
+          },
+          account_dst: {
+            code: 202,
+            uid:  receiver_member.uid
+          }
+        }
+      end
+      let(:operations) {[operation]}
+
+      before { request }
+      it { expect(response).to have_http_status 422 }
+      it { expect(response.body).to match(/account balance is insufficient/i) }
+    end
+
     context 'referral program story' do
       # In case of referral program some fees received by platform
       # during trading are returned to the referrer once per 4h for example.
