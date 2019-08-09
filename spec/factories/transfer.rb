@@ -1,6 +1,7 @@
 # encoding: UTF-8
 # frozen_string_literal: true
 
+# TODO: Generate operations in the way that transfer accounting is always valid.
 FactoryBot.define do
   sequence :transfer_key do
     Faker::Number.unique.number(5).to_i
@@ -15,31 +16,19 @@ FactoryBot.define do
     desc { "#{kind} for #{Time.now.to_date}" }
 
     trait :with_assets do
-      after(:create) do |t|
-        assets_number = Faker::Number.between(1, 5).to_i
-        create_list(:asset, assets_number, reference: t)
-      end
+      assets { build_list(:asset, 5, credit: 2.5, currency_id: :btc) }
     end
 
     trait :with_expenses do
-      after(:create) do |t|
-        expense_number = Faker::Number.between(1, 5).to_i
-        create_list(:expense, expense_number, reference: t)
-      end
+      expenses { build_list(:expense, 5, credit: 2.5, currency_id: :btc) }
     end
 
     trait :with_liabilities do
-      after(:create) do |t|
-        liabilities_number = Faker::Number.between(1, 5).to_i
-        create_list(:liability, liabilities_number, :with_member, reference: t)
-      end
+      liabilities { build_list(:liability, 5, :with_member, credit: 2.5, currency_id: :btc) }
     end
 
     trait :with_revenues do
-      after(:create) do |t|
-        revenues_number = Faker::Number.between(1, 5).to_i
-        create_list(:revenue, revenues_number, reference: t)
-      end
+      revenues { build_list(:revenue, 5, credit: 2.5, currency_id: :btc) }
     end
 
     trait :with_operations do

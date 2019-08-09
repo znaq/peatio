@@ -232,6 +232,18 @@ describe Transfer do
             subject
           }.to change { member3.accounts.find_by(currency: currency_btc).balance }.by(-4)
         end
+
+        context 'legacy balance update raise error' do
+          before do
+            Account.any_instance.expects(:sub_funds).raises(Account::AccountError)
+          end
+
+          it 'does not create transfer' do
+            expect {
+              subject rescue Account::AccountError; nil
+            }.to_not change{ Transfer.count }
+          end
+        end
       end
     end
   end

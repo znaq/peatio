@@ -43,16 +43,16 @@ describe API::V2::Management::Entities::Transfer do
     end
   end
 
-  context 'with single operation type' do
-    let(:record) { create(:transfer, :with_liabilities) }
+  context 'with two operation types' do
+    let(:record) { create(:transfer, :with_assets, :with_liabilities) }
 
     it do
       expect(subject.respond_to?(:liabilities)).to be_truthy
+      expect(subject.respond_to?(:assets)).to be_truthy
     end
 
     it do
-      # TYPES - 'liabilities' = PLATFORM_TYPES
-      ::Operations::Account::PLATFORM_TYPES.map(&:pluralize).each do |op_t|
+      %i[revenues expenses].each do |op_t|
         expect(subject.respond_to?(op_t.to_sym)).to be_falsey
       end
     end

@@ -88,6 +88,9 @@ module API
         rescue ActiveRecord::RecordInvalid => e
           body errors: e.message
           status 422
+        rescue ::Account::AccountError => e
+          body errors: "Account balance is insufficient (#{e.message})"
+          status 422
         end
       end
     end
