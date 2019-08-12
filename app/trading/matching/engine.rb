@@ -139,7 +139,7 @@ module Matching
                        maker_order_id: maker_order.id,
                        taker_order_id: taker_order.id,
                        strike_price: price,
-                       volume: volume,
+                       amount: volume,
                        total: funds },
                      { persistent: false })
     end
