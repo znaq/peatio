@@ -10,7 +10,7 @@ module Matching
       # NOTE: Run matching engine for disabled markets.
       @market  = Market.find(payload[:market_id])
       @price   = payload[:strike_price].to_d
-      @volume  = payload[:volume].to_d
+      @amount  = payload[:amount].to_d
       @total   = payload[:total].to_d
     end
 
@@ -42,7 +42,7 @@ module Matching
       raise_error(3002, 'Bid price is less than strike price.') if @taker_order.ord_type == 'limit' && @taker_order.price < @price
       raise_error(3003, "Ask state isn\'t equal to «wait» (#{@maker_order.state}).") unless @maker_order.state == Order::WAIT
       raise_error(3004, "Bid state isn\'t equal to «wait» (#{@taker_order.state}).") unless @taker_order.state == Order::WAIT
-      unless @total > ZERO && [@maker_order.volume, @taker_order.volume].min >= @volume
+      unless @total > ZERO && [@maker_order.volume, @taker_order.volume].min >= @amount
         raise_error(3005, 'Not enough funds.')
       end
     end
@@ -68,7 +68,7 @@ module Matching
           taker_order:   @taker_order,
           taker_id:      @taker_order.member_id,
           price:         @price,
-          amount:        @volume,
+          amount:        @amount,
           total:         @total,
           market:        @market
 
@@ -133,7 +133,7 @@ module Matching
         maker_order: @maker_order.attributes,
         taker_order: @taker_order.attributes,
         price:       @price,
-        volume:      @volume,
+        volume:      @amount,
         total:       @total,
         code:        code,
         message:     message

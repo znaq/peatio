@@ -10,12 +10,12 @@ describe Matching::Executor do
 
   subject do
     Matching::Executor.new(
-      market_id:    market.id,
-      ask_id:       ask.id,
-      bid_id:       bid.id,
-      strike_price: price.to_s('F'),
-      volume:       volume.to_s('F'),
-      funds:        (price * volume).to_s('F')
+      market_id:      market.id,
+      maker_order_id: ask.id,
+      taker_order_id: bid.id,
+      strike_price:   price.to_s('F'),
+      amount:         volume.to_s('F'),
+      total:          (price * volume).to_s('F')
     )
   end
 
@@ -45,24 +45,16 @@ describe Matching::Executor do
       expect do
         trade = subject.execute!
 
-        expect(trade.trend).to eq 'up'
         expect(trade.price).to eq price
-        expect(trade.volume).to eq volume
-        expect(trade.ask_id).to eq ask.id
-        expect(trade.bid_id).to eq bid.id
+        expect(trade.amount).to eq volume
+        expect(trade.maker_order_id).to eq ask.id
+        expect(trade.taker_order_id).to eq bid.id
       end.to change(Trade, :count).by(1)
     end
 
-    it 'should set trend to down' do
-      Market.any_instance.expects(:latest_price).returns(11.to_d)
-      trade = subject.execute!
-      expect(trade.trend).to eq 'down'
-    end
-
     it 'should set trade used funds' do
-      Market.any_instance.expects(:latest_price).returns(11.to_d)
       trade = subject.execute!
-      expect(trade.funds).to eq price * volume
+      expect(trade.total).to eq price * volume
     end
 
     it 'should increase order\'s trades count' do
@@ -113,12 +105,12 @@ describe Matching::Executor do
 
     it 'should cancel the market order' do
       executor = Matching::Executor.new(
-        market_id:    market.id,
-        ask_id:       ask.id,
-        bid_id:       bid.id,
-        strike_price: '2.0'.to_d,
-        volume:       '1.5'.to_d,
-        funds:        '3.0'.to_d
+        market_id:      market.id,
+        maker_order_id: ask.id,
+        taker_order_id: bid.id,
+        strike_price:   '2.0'.to_d,
+        amount:         '1.5'.to_d,
+        total:          '3.0'.to_d
       )
       executor.execute!
 
@@ -132,12 +124,12 @@ describe Matching::Executor do
 
     subject do
       Matching::Executor.new(
-        market_id:    market.id,
-        ask_id:       ask.id,
-        bid_id:       bid.id,
-        strike_price: price - 1, # so bid order only used (price-1)*volume
-        volume:       volume.to_s('F'),
-        funds:        ((price - 1) * volume).to_s('F')
+        market_id:      market.id,
+        maker_order_id: ask.id,
+        taker_order_id: bid.id,
+        strike_price:   price - 1, # so bid order only used (price-1)*volume
+        amount:         volume.to_s('F'),
+        total:          ((price - 1) * volume).to_s('F')
       )
     end
 
