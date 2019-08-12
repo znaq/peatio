@@ -3,7 +3,7 @@
 
 FactoryBot.define do
   factory :operation do
-    currency { Currency.all.sample }
+    currency_id { Currency.pluck(:id).sample }
 
     credit { Kernel.rand(10..1000).to_d }
 
@@ -12,7 +12,7 @@ FactoryBot.define do
       credit { 0 }
     end
 
-    reference_type { %w[order deposit trade].sample }
+    reference_type { %w[Order Deposit Trade Withdraw].sample }
 
     created_at { Faker::Date.between(3.days.ago, Date.today) }
   end
