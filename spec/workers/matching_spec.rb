@@ -33,7 +33,7 @@ describe Workers::AMQP::Matching do
       order = create(:order_bid, :btcusd, price: '4001', volume: '8.0', member: bob)
 
       AMQPQueue.expects(:enqueue)
-               .with(:trade_executor, { market_id: market.id, ask_id: existing.id, bid_id: order.id, strike_price: '4001'.to_d, volume: '8.0'.to_d, funds: '32008'.to_d }, anything)
+               .with(:trade_executor, { market_id: market.id, maker_order_id: existing.id, taker_order_id: order.id, strike_price: '4001'.to_d, amount: '8.0'.to_d, total: '32008'.to_d }, anything)
       subject.process({ action: 'submit', order: order.to_matching_attributes }, {}, {})
     end
 
@@ -41,7 +41,7 @@ describe Workers::AMQP::Matching do
       order = create(:order_bid, :btcusd, price: '4001', volume: '12.0', member: bob)
 
       AMQPQueue.expects(:enqueue)
-               .with(:trade_executor, { market_id: market.id, ask_id: existing.id, bid_id: order.id, strike_price: '4001'.to_d, volume: '10.0'.to_d, funds: '40010'.to_d }, anything)
+               .with(:trade_executor, { market_id: market.id, maker_order_id: existing.id, taker_order_id: order.id, strike_price: '4001'.to_d, amount: '10.0'.to_d, total: '40010'.to_d }, anything)
       subject.process({ action: 'submit', order: order.to_matching_attributes }, {}, {})
     end
   end
@@ -78,13 +78,13 @@ describe Workers::AMQP::Matching do
 
     it 'should create many trades' do
       AMQPQueue.expects(:enqueue)
-               .with(:trade_executor, { market_id: market.id, ask_id: ask1.id, bid_id: bid3.id, strike_price: ask1.price, volume: ask1.volume, funds: '12009'.to_d }, anything).once
+               .with(:trade_executor, { market_id: market.id, maker_order_id: ask1.id, taker_order_id: bid3.id, strike_price: ask1.price, amount: ask1.volume, total: '12009'.to_d }, anything).once
       AMQPQueue.expects(:enqueue)
-               .with(:trade_executor, { market_id: market.id, ask_id: ask2.id, bid_id: bid3.id, strike_price: ask2.price, volume: ask2.volume, funds: '12006'.to_d }, anything).once
+               .with(:trade_executor, { market_id: market.id, maker_order_id: ask2.id, taker_order_id: bid3.id, strike_price: ask2.price, amount: ask2.volume, total: '12006'.to_d }, anything).once
       AMQPQueue.expects(:enqueue)
-               .with(:trade_executor, { market_id: market.id, ask_id: ask4.id, bid_id: bid3.id, strike_price: bid3.price, volume: '2.0'.to_d, funds: '8006'.to_d }, anything).once
+               .with(:trade_executor, { market_id: market.id, taker_order_id: ask4.id, maker_order_id: bid3.id, strike_price: bid3.price, amount: '2.0'.to_d, total: '8006'.to_d }, anything).once
       AMQPQueue.expects(:enqueue)
-               .with(:trade_executor, { market_id: market.id, ask_id: ask4.id, bid_id: bid5.id, strike_price: ask4.price, volume: bid5.volume, funds: '12006'.to_d }, anything).once
+               .with(:trade_executor, { market_id: market.id, maker_order_id: ask4.id, taker_order_id: bid5.id, strike_price: ask4.price, amount: bid5.volume, total: '12006'.to_d }, anything).once
 
       subject
     end
@@ -104,15 +104,12 @@ describe Workers::AMQP::Matching do
   end
 
   context 'dryrun' do
-    let!(:ask) { create(:order_ask, :btcusd, price: '4000', volume: '3.0', member: alice) }
     let!(:bid) { create(:order_bid, :btcusd, price: '4001', volume: '8.0', member: bob) }
 
     subject { Workers::AMQP::Matching.new(mode: :dryrun) }
 
     context 'very old orders matched' do
-      before do
-        ask.update_column :created_at, 1.day.ago
-      end
+      let!(:ask) { create(:order_ask, :btcusd, price: '4000', volume: '3.0', member: alice, created_at: 1.day.ago) }
 
       it 'should not start engine' do
         expect(subject.engines['btcusd'].mode).to eq :dryrun
@@ -121,6 +118,8 @@ describe Workers::AMQP::Matching do
     end
 
     context 'buffered orders matched' do
+      let!(:ask) { create(:order_ask, :btcusd, price: '4000', volume: '3.0', member: alice) }
+
       it 'should start engine' do
         expect(subject.engines['btcusd'].mode).to eq :run
       end
