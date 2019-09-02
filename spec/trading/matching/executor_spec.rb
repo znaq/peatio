@@ -28,9 +28,19 @@ describe Matching::Executor do
     end
   end
 
-  context 'invalid price' do
+  context 'invalid bid price' do
     let(:ask) { ::Matching::LimitOrder.new create(:order_ask, :btcusd, price: price, volume: volume, member: alice).to_matching_attributes }
     let(:bid) { ::Matching::LimitOrder.new create(:order_bid, :btcusd, price: price - 1, volume: volume, member: bob).to_matching_attributes }
+
+    it 'should raise error' do
+      expect { subject.execute! }.to raise_error(Matching::TradeExecutionError)
+    end
+  end
+
+
+  context 'invalid ask price' do
+    let(:ask) { ::Matching::LimitOrder.new create(:order_ask, :btcusd, price: price + 1, volume: volume, member: alice).to_matching_attributes }
+    let(:bid) { ::Matching::LimitOrder.new create(:order_bid, :btcusd, price: price, volume: volume, member: bob).to_matching_attributes }
 
     it 'should raise error' do
       expect { subject.execute! }.to raise_error(Matching::TradeExecutionError)
@@ -164,7 +174,7 @@ describe Matching::Executor do
       let(:bid) { create(:order_bid, :btcusd, price: price, volume: volume, member: bob) }
 
       before do
-        market.update!(maker_fee: 0.01, taker_fee: 0.02)
+        TradingFee.last.update!(maker: 0.01, taker: 0.02)
         subject.execute!
       end
 
@@ -184,7 +194,7 @@ describe Matching::Executor do
       let(:bid) { create(:order_bid, :btcusd, price: price, volume: volume, member: bob) }
 
       before do
-        market.update!(maker_fee: 0.0, taker_fee: 0.02)
+        TradingFee.last.update!(maker: 0.0, taker: 0.02)
         subject.execute!
       end
 

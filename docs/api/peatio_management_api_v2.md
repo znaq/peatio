@@ -1,12 +1,12 @@
 # Peatio Management API v2
 Management API is server-to-server API with high privileges.
 
-## Version: 2.3.12
+## Version: 2.3.17
 
 **Contact information:**  
-peatio.tech  
-https://www.peatio.tech  
-hello@peatio.tech  
+openware.com  
+https://www.openware.com  
+hello@openware.com  
 
 **License:** https://github.com/rubykube/peatio/blob/master/LICENSE.md
 
@@ -456,6 +456,48 @@ Returns trades as paginated collection.
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
 | 201 | Returns trades as paginated collection. | [Trade](#trade) |
+
+### /members/group
+
+#### POST
+##### Description:
+
+Set user group.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| uid | formData | The shared user ID. | Yes | string |
+| group | formData | User gruop | Yes | string |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 201 | Set user group. |
+
+### /fee_schedule/trading_fees
+
+#### POST
+##### Description:
+
+Returns trading_fees table as paginated collection
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| group | formData | Member group | No | string |
+| market_id | formData | Market id | No | string |
+| page | formData | The page number (defaults to 1). | No | integer |
+| limit | formData | The number of objects per page (defaults to 100, maximum is 1000). | No | integer |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 201 | Returns trading_fees table as paginated collection |
 
 ### Models
 

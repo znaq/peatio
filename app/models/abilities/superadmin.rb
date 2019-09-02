@@ -24,7 +24,9 @@ module Abilities
       can :manage, Blockchain
       can :manage, Account
       can :manage, Wallet
+      can :manage, TradingFee
       can :manage, PaymentAddress
+      can :manage, Adjustment
     end
   end
 end
