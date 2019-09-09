@@ -8,7 +8,7 @@ class Adjustment < ApplicationRecord
   include AASM::Locking
   CATEGORIES = %w[asset_registration investment minting_token
                   balance_anomaly misc refund compensation
-                  incentive bank_fees bank_interest minor]
+                  incentive bank_fees bank_interest minor].freeze
 
   # == Attributes ===========================================================
 
@@ -63,7 +63,7 @@ class Adjustment < ApplicationRecord
     end
   end
 
-  # Custon ransackers.
+  # Custom ransackers.
 
   ransacker :state, formatter: proc { |v| states[v] } do |parent|
     parent.table[:state]

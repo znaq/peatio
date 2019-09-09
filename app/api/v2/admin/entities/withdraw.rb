@@ -16,6 +16,30 @@ module API
           )
 
           expose(
+            :beneficiary,
+            using: API::V2::Entities::Beneficiary,
+            if: ->(withdraw, options) do
+              options[:with_beneficiary] && withdraw.beneficiary.present?
+            end
+          )
+
+          expose(
+            :uid,
+            documentation: {
+              type: String,
+              desc: 'The withdrawal member uid.'
+            }
+          ) { |w| w.member.uid }
+
+          expose(
+            :email,
+            documentation: {
+              type: String,
+              desc: 'The withdrawal member email.'
+            }
+          ) { |w| w.member.email }
+
+          expose(
             :account_id,
             as: :account,
             documentation: {

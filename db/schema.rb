@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_30_082950) do
+ActiveRecord::Schema.define(version: 2019_09_05_050444) do
 
   create_table "accounts", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "member_id", null: false
@@ -53,12 +53,26 @@ ActiveRecord::Schema.define(version: 2019_08_30_082950) do
     t.index ["reference_type", "reference_id"], name: "index_assets_on_reference_type_and_reference_id"
   end
 
+  create_table "beneficiaries", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.bigint "member_id", null: false
+    t.string "currency_id", limit: 10, null: false
+    t.string "name", limit: 64, null: false
+    t.string "description", default: ""
+    t.json "data"
+    t.integer "pin", limit: 3, null: false, unsigned: true
+    t.integer "state", limit: 1, default: 0, null: false, unsigned: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["currency_id"], name: "index_beneficiaries_on_currency_id"
+    t.index ["member_id"], name: "index_beneficiaries_on_member_id"
+  end
+
   create_table "blockchains", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "key", null: false
     t.string "name"
     t.string "client", null: false
     t.string "server"
-    t.integer "height", null: false
+    t.bigint "height", null: false
     t.string "explorer_address"
     t.string "explorer_transaction"
     t.integer "min_confirmations", default: 6, null: false
@@ -276,13 +290,12 @@ ActiveRecord::Schema.define(version: 2019_08_30_082950) do
   end
 
   create_table "transfers", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
-    t.integer "key", null: false
-    t.string "kind", limit: 30, null: false
-    t.string "desc", default: ""
+    t.string "key", limit: 30, null: false
+    t.integer "category", limit: 1, null: false
+    t.string "description", default: ""
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["key"], name: "index_transfers_on_key", unique: true
-    t.index ["kind"], name: "index_transfers_on_kind"
   end
 
   create_table "triggers", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -303,11 +316,9 @@ ActiveRecord::Schema.define(version: 2019_08_30_082950) do
     t.string "name", limit: 64
     t.string "address", null: false
     t.integer "kind", null: false
-    t.integer "nsig"
     t.string "gateway", limit: 20, default: "", null: false
     t.string "settings_encrypted", limit: 1024
     t.decimal "max_balance", precision: 32, scale: 16, default: "0.0", null: false
-    t.integer "parent"
     t.string "status", limit: 32
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -320,6 +331,7 @@ ActiveRecord::Schema.define(version: 2019_08_30_082950) do
   create_table "withdraws", id: :integer, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "member_id", null: false
+    t.bigint "beneficiary_id"
     t.string "currency_id", limit: 10, null: false
     t.decimal "amount", precision: 32, scale: 16, null: false
     t.decimal "fee", precision: 32, scale: 16, null: false

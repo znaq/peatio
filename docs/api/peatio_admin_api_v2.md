@@ -1,7 +1,7 @@
 # Peatio Admin API v2
 Admin API high privileged API with RBAC.
 
-## Version: 2.3.17
+## Version: 2.3.29
 
 **Contact information:**  
 openware.com  
@@ -9,6 +9,138 @@ https://www.openware.com
 hello@openware.com  
 
 **License:** https://github.com/rubykube/peatio/blob/master/LICENSE.md
+
+### /adjustments/action
+
+#### POST
+##### Description:
+
+Accepts adjustment and creates operations or reject adjustment.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | formData | Unique adjustment identifier in database. | Yes | integer |
+| action | formData | Adjustment action all available actions: [:accept, :reject] | Yes | string |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 | Accepts adjustment and creates operations or reject adjustment. | [Adjustment](#adjustment) |
+
+### /adjustments/new
+
+#### POST
+##### Description:
+
+Create new adjustment.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| reason | formData | Adjustment reason. | Yes | string |
+| description | formData | Adjustment description. | Yes | string |
+| category | formData | Adjustment category | Yes | string |
+| amount | formData | Adjustment amount. | Yes | double |
+| currency_id | formData | Adjustment currency ID. | Yes | string |
+| asset_account_code | formData | Adjustment asset account code. | Yes | integer |
+| receiving_account_code | formData | Adjustment receiving account code. | Yes | integer |
+| receiving_member_uid | formData | Adjustment receiving account code. | No | string |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 | Create new adjustment. | [Adjustment](#adjustment) |
+
+### /adjustments/{id}
+
+#### GET
+##### Description:
+
+Get adjustment by ID
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path | Adjsustment Identifier in Database | Yes | integer |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | Get adjustment by ID | [Adjustment](#adjustment) |
+
+### /adjustments
+
+#### GET
+##### Description:
+
+Get all adjustments, result is paginated.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| currency | query | Deposit currency id. | No | string |
+| range | query | Date range picker, defaults to 'created'. | No | string |
+| from | query | An integer represents the seconds elapsed since Unix epoch.If set, only entities FROM the time will be retrieved. | No | dateTime |
+| to | query | An integer represents the seconds elapsed since Unix epoch.If set, only entities BEFORE the time will be retrieved. | No | dateTime |
+| limit | query | Limit the number of returned paginations. Defaults to 100. | No | integer |
+| page | query | Specify the page of paginated results. | No | integer |
+| ordering | query | If set, returned values will be sorted in specific order, defaults to 'asc'. | No | string |
+| order_by | query | Name of the field, which result will be ordered by. | No | string |
+| state | query | Adjustment's state. | No | string |
+| category | query | Adjustment category | No | string |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | Get all adjustments, result is paginated. | [ [Adjustment](#adjustment) ] |
+
+### /orders/cancel
+
+#### POST
+##### Description:
+
+Cancel all orders.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| market | formData | Unique order id. | Yes | string |
+| side | formData | If present, only sell orders (asks) or buy orders (bids) will be cancelled. | No | string |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 201 | Cancel all orders. |
+
+### /orders/{id}/cancel
+
+#### POST
+##### Description:
+
+Cancel an order.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path | Unique order id. | Yes | integer |
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 201 | Cancel an order. |
 
 ### /orders
 
@@ -174,8 +306,7 @@ Update currency.
 | position | formData | Currency position. | No | integer |
 | options | formData | Currency options. | No | json |
 | enabled | formData | Currency display status (enabled/disabled). | No | boolean |
-| subunits | formData | Fraction of the basic monetary unit. | No | integer |
-| precision | formData | Currency precision | No | integer |
+| precision | formData | Currency precision. | No | integer |
 | icon_url | formData | Currency icon | No | string |
 | code | formData | Unique currency code. | Yes | string |
 | symbol | formData | Currency symbol | No | string |
@@ -209,12 +340,13 @@ Create new currency.
 | position | formData | Currency position. | No | integer |
 | options | formData | Currency options. | No | json |
 | enabled | formData | Currency display status (enabled/disabled). | No | boolean |
-| subunits | formData | Fraction of the basic monetary unit. | No | integer |
-| precision | formData | Currency precision | No | integer |
+| precision | formData | Currency precision. | No | integer |
 | icon_url | formData | Currency icon | No | string |
 | code | formData | Unique currency code. | Yes | string |
 | symbol | formData | Currency symbol | Yes | string |
 | type | formData | Currency type | No | string |
+| base_factor | formData | Currency base factor. | No | integer |
+| subunits | formData | Fraction of the basic monetary unit. | No | integer |
 | blockchain_key | formData | Associated blockchain key which will perform transactions synchronization for currency. | Yes | string |
 
 ##### Responses
@@ -369,9 +501,7 @@ Update wallet.
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | settings | formData | Wallet settings. | No | json |
-| nsig | formData | Wallet number of signatures. | No | integer |
 | max_balance | formData | Wallet max balance. | No | double |
-| parent | formData | Wallet parent. | No | string |
 | status | formData | Wallet status (active/disabled). | No | string |
 | id | formData | Unique wallet identifier in database. | Yes | integer |
 | blockchain_key | formData | Wallet blockchain key. | No | string |
@@ -379,7 +509,7 @@ Update wallet.
 | address | formData | Wallet address. | No | string |
 | kind | formData | Kind of wallet 'deposit','fee','hot','warm' or 'cold'. | No | string |
 | gateway | formData | Wallet gateway. | No | string |
-| currency | formData | Deposit currency id. | No | string |
+| currency | formData | Wallet currency code. | No | string |
 
 ##### Responses
 
@@ -399,14 +529,12 @@ Creates new wallet.
 | Name | Located in | Description | Required | Schema |
 | ---- | ---------- | ----------- | -------- | ---- |
 | settings | formData | Wallet settings. | No | json |
-| nsig | formData | Wallet number of signatures. | No | integer |
 | max_balance | formData | Wallet max balance. | No | double |
-| parent | formData | Wallet parent. | No | string |
 | status | formData | Wallet status (active/disabled). | No | string |
 | blockchain_key | formData | Wallet blockchain key. | Yes | string |
 | name | formData | Wallet name. | Yes | string |
 | address | formData | Wallet address. | Yes | string |
-| currency_id | formData | Wallet currency code. | Yes | string |
+| currency | formData | Wallet currency code. | Yes | string |
 | kind | formData | Kind of wallet 'deposit','fee','hot','warm' or 'cold'. | Yes | string |
 | gateway | formData | Wallet gateway. | Yes | string |
 
@@ -435,6 +563,32 @@ Get a wallet.
 | ---- | ----------- | ------ |
 | 200 | Get a wallet. | [Wallet](#wallet) |
 
+### /wallets/gateways
+
+#### GET
+##### Description:
+
+List wallet gateways.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | List wallet gateways. |
+
+### /wallets/kinds
+
+#### GET
+##### Description:
+
+List wallet kinds.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | List wallet kinds. |
+
 ### /wallets
 
 #### GET
@@ -459,6 +613,48 @@ Get all wallets, result is paginated.
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
 | 200 | Get all wallets, result is paginated. | [ [Wallet](#wallet) ] |
+
+### /deposits/new
+
+#### POST
+##### Description:
+
+Creates new fiat deposit .
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| uid | formData | Deposit member uid. | Yes | string |
+| currency | formData | Deposit currency id. | Yes | string |
+| amount | formData | Deposit amount. | Yes | double |
+| tid | formData | Deposit tid. | No | string |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 | Creates new fiat deposit . | [Deposit](#deposit) |
+
+### /deposits/actions
+
+#### POST
+##### Description:
+
+Take an action on the deposit.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | formData | Unique deposit id. | Yes | integer |
+| action | formData | Valid actions are [:cancel, :reject, :accept, :skip, :dispatch]. | Yes | string |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 | Take an action on the deposit. | [Deposit](#deposit) |
 
 ### /deposits
 
@@ -493,6 +689,46 @@ Get all deposits, result is paginated.
 | ---- | ----------- | ------ |
 | 200 | Get all deposits, result is paginated. | [ [Deposit](#deposit) ] |
 
+### /withdraws/actions
+
+#### POST
+##### Description:
+
+Take an action on the withdrawal.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | formData | The withdrawal id. | Yes | integer |
+| action | formData | Valid actions are [:submit, :cancel, :accept, :reject, :process, :load, :dispatch, :success, :skip, :fail, :err]. | Yes | string |
+| txid | formData | The withdrawal transaction id. | No | string |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 | Take an action on the withdrawal. | [Withdraw](#withdraw) |
+
+### /withdraws/{id}
+
+#### GET
+##### Description:
+
+Get withdraw by ID.
+
+##### Parameters
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path | The withdrawal id. | Yes | integer |
+
+##### Responses
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 | Get withdraw by ID. | [Withdraw](#withdraw) |
+
 ### /withdraws
 
 #### GET
@@ -526,7 +762,7 @@ Get all withdraws, result is paginated.
 
 | Code | Description | Schema |
 | ---- | ----------- | ------ |
-| 200 | Get all withdraws, result is paginated. | [ [Deposit](#deposit) ] |
+| 200 | Get all withdraws, result is paginated. | [ [Withdraw](#withdraw) ] |
 
 ### /trades
 
@@ -790,82 +1026,50 @@ Returns trading_fees table as paginated collection
 | ---- | ----------- | ------ |
 | 200 | Returns trading_fees table as paginated collection | [ [TradingFee](#tradingfee) ] |
 
-### /adjustments/action
+### Models
 
-#### POST
-##### Description:
 
-Accepts adjustment and creates operations or reject adjustment.
-
-##### Parameters
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| id | formData | Unique adjustment identifier in database. | Yes | integer |
-| action | formData | Adjustment action all available actions: [:accept, :reject] | Yes | string |
-
-##### Responses
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 201 | Accepts adjustment and creates operations or reject adjustment. | [Adjustment](#adjustment) |
-
-### /adjustments/new
-
-#### POST
-##### Description:
-
-Create new adjustment.
-
-##### Parameters
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| reason | formData | Adjustment reason. | Yes | string |
-| description | formData | Adjustment description. | Yes | string |
-| category | formData | Adjustment category | Yes | string |
-| amount | formData | Adjustment amount. | Yes | double |
-| currency_id | formData | Adjustment currency ID. | Yes | string |
-| asset_account_code | formData | Adjustment asset account code. | Yes | integer |
-| receiving_account_code | formData | Adjustment receiving account code. | Yes | integer |
-| receiving_member_uid | formData | Adjustment receiving account code. | No | string |
-
-##### Responses
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 201 | Create new adjustment. | [Adjustment](#adjustment) |
-
-### /adjustments
-
-#### GET
-##### Description:
+#### Adjustment
 
 Get all adjustments, result is paginated.
 
-##### Parameters
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | integer | Unique adjustment identifier in database. | No |
+| reason | string | Adjustment reason. | No |
+| description | string | Adjustment description. | No |
+| category | string | Adjustment category | No |
+| amount | string | Adjustment amount. | No |
+| validator_uid | integer | Unique adjustment validator identifier in database. | No |
+| creator_uid | integer | Unique adjustment creator identifier in database. | No |
+| currency | string | Adjustment currency ID. | No |
+| asset | [Operation](#operation) |  | No |
+| liability | [Operation](#operation) |  | No |
+| revenue | [Operation](#operation) |  | No |
+| expense | [Operation](#operation) |  | No |
+| state | string | Adjustment's state. | No |
+| asset_account_code | integer | Adjustment asset account code. | No |
+| receiving_account_code | string | Adjustment receiving account code. | No |
+| receiving_member_uid | string | Adjustment receiving member uid. | No |
+| created_at | string | The datetime when operation was created. | No |
+| updated_at | string | The datetime when operation was updated. | No |
 
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| currency | query | Deposit currency id. | No | string |
-| range | query | Date range picker, defaults to 'created'. | No | string |
-| from | query | An integer represents the seconds elapsed since Unix epoch.If set, only entities FROM the time will be retrieved. | No | dateTime |
-| to | query | An integer represents the seconds elapsed since Unix epoch.If set, only entities BEFORE the time will be retrieved. | No | dateTime |
-| limit | query | Limit the number of returned paginations. Defaults to 100. | No | integer |
-| page | query | Specify the page of paginated results. | No | integer |
-| ordering | query | If set, returned values will be sorted in specific order, defaults to 'asc'. | No | string |
-| order_by | query | Name of the field, which result will be ordered by. | No | string |
-| state | query | Adjustment's state. | No | string |
-| category | query | Adjustment category | No | string |
+#### Operation
 
-##### Responses
+Returns liabilities as a paginated collection.
 
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 200 | Get all adjustments, result is paginated. | [ [Adjustment](#adjustment) ] |
-
-### Models
-
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | integer | Unique operation identifier in database. | No |
+| code | string | The Account code which this operation related to. | No |
+| currency | string | Operation currency ID. | No |
+| credit | string | Operation credit amount. | No |
+| debit | string | Operation debit amount. | No |
+| uid | string | The shared user ID. | No |
+| account_kind | string | Operation's account kind (locked or main). | No |
+| rid | string | The id of operation reference. | No |
+| reference_type | string | The type of operations. | No |
+| created_at | string | The datetime when operation was created. | No |
 
 #### Order
 
@@ -940,8 +1144,8 @@ Get list of currencies
 | min_withdraw_amount | string | Minimal withdraw amount | No |
 | withdraw_limit_24h | string | Currency 24h withdraw limit | No |
 | withdraw_limit_72h | string | Currency 72h withdraw limit | No |
-| base_factor | string | Currency base factor | No |
-| precision | string | Currency precision | No |
+| base_factor | integer | Currency base factor. | No |
+| precision | integer | Currency precision. | No |
 | icon_url | string | Currency icon | No |
 | min_confirmations | string | Number of confirmations required for confirming deposit or withdrawal | No |
 | code | string | Unique currency code. | No |
@@ -949,6 +1153,7 @@ Get list of currencies
 | min_collection_amount | double | Minimal collection amount. | No |
 | position | integer | Currency position. | No |
 | enabled | string | Currency display status (enabled/disabled). | No |
+| subunits | integer | Fraction of the basic monetary unit. | No |
 | options | json | Currency options. | No |
 | created_at | string | Currency created time in iso8601 format. | No |
 | updated_at | string | Currency updated time in iso8601 format. | No |
@@ -985,9 +1190,7 @@ Get all wallets, result is paginated.
 | currency | string | Wallet currency code. | No |
 | address | string | Wallet address. | No |
 | gateway | string | Wallet gateway. | No |
-| nsig | integer | Wallet number of signatures. | No |
 | max_balance | double | Wallet max balance. | No |
-| parent | integer | Wallet parent. | No |
 | blockchain_key | string | Wallet blockchain key. | No |
 | status | string | Wallet status (active/disabled). | No |
 | settings | json | Wallet settings. | No |
@@ -996,7 +1199,7 @@ Get all wallets, result is paginated.
 
 #### Deposit
 
-Get all withdraws, result is paginated.
+Get all deposits, result is paginated.
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
@@ -1010,7 +1213,8 @@ Get all withdraws, result is paginated.
 | created_at | string | The datetime when deposit was created. | No |
 | completed_at | string | The datetime when deposit was completed. | No |
 | member | string | The member id. | No |
-| uid | integer | Deposit member uid. | No |
+| uid | string | Deposit member uid. | No |
+| email | string | The deposit member email. | No |
 | address | string | Deposit blockchain address. | No |
 | txout | integer | Deposit blockchain transaction output. | No |
 | block_number | integer | Deposit blockchain block number. | No |
@@ -1019,21 +1223,44 @@ Get all withdraws, result is paginated.
 | spread | string | Deposit collection spread. | No |
 | updated_at | string | The datetime when deposit was updated. | No |
 
-#### Operation
+#### Withdraw
 
-Returns liabilities as a paginated collection.
+Get all withdraws, result is paginated.
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| id | integer | Unique operation identifier in database. | No |
-| code | string | The Account code which this operation related to. | No |
-| currency | string | Operation currency ID. | No |
-| credit | string | Operation credit amount. | No |
-| debit | string | Operation debit amount. | No |
-| uid | string | The shared user ID. | No |
-| rid | string | The id of operation reference. | No |
-| reference_type | string | The type of operations. | No |
-| created_at | string | The datetime when operation was created. | No |
+| id | integer | The withdrawal id. | No |
+| currency | string | The currency code. | No |
+| type | string | The withdrawal type | No |
+| sum | double | The withdrawal sum. | No |
+| fee | double | The exchange fee. | No |
+| blockchain_txid | string | The withdrawal transaction id. | No |
+| rid | string | The beneficiary ID or wallet address on the Blockchain. | No |
+| state | string | The withdrawal state. | No |
+| confirmations | integer | Number of confirmations. | No |
+| note | string | Withdraw note. | No |
+| created_at | string | The datetimes for the withdrawal. | No |
+| updated_at | string | The datetimes for the withdrawal. | No |
+| completed_at | string | The datetime when withdraw was completed. | No |
+| member | string | The member id. | No |
+| beneficiary | [Beneficiary](#beneficiary) |  | No |
+| uid | string | The withdrawal member uid. | No |
+| email | string | The withdrawal member email. | No |
+| account | string | The account code. | No |
+| block_number | integer | The withdrawal block_number. | No |
+| amount | double | The withdrawal amount. | No |
+| tid | string | Withdraw tid. | No |
+
+#### Beneficiary
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | integer | Beneficiary Identifier in Database | No |
+| currency | string | Beneficiary currency code. | No |
+| name | string | Human rememberable name which refer beneficiary. | No |
+| description | string | Human rememberable description of beneficiary. | No |
+| data | json | Bank Account details for fiat Beneficiary in JSON format.For crypto it's blockchain address. | No |
+| state | string | Defines either beneficiary active - user can use it to withdraw moneyor pending - requires beneficiary activation with pin. | No |
 
 #### Member
 
@@ -1072,51 +1299,3 @@ Returns trading_fees table as paginated collection
 | taker | double | Market taker fee. | No |
 | created_at | string | Trading fee table created time in iso8601 format. | No |
 | updated_at | string | Trading fee table updated time in iso8601 format. | No |
-
-#### Adjustment
-
-Get all adjustments, result is paginated.
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| id | integer | Unique adjustment identifier in database. | No |
-| reason | string | Adjustment reason. | No |
-| description | string | Adjustment description. | No |
-| category | string | Adjustment category | No |
-| amount | string | Adjustment amount. | No |
-| validator_uid | integer | Unique adjustment validator identifier in database. | No |
-| creator_uid | integer | Unique adjustment creator identifier in database. | No |
-| currency | string | Adjustment currency ID. | No |
-| asset | [Operation](#operation) |  | No |
-| liability | [Operation](#operation) |  | No |
-| revenue | [Operation](#operation) |  | No |
-| expense | [Operation](#operation) |  | No |
-| state | string | Adjustment's state. | No |
-| asset_account_code | integer | Adjustment asset account code. | No |
-| receiving_account_code | string | Adjustment receiving account code. | No |
-| receiving_member_uid | string | Adjustment receiving member uid. | No |
-| created_at | string | The datetime when operation was created. | No |
-| updated_at | string | The datetime when operation was updated. | No |
-
-#### Withdraw
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| id | integer | The withdrawal id. | No |
-| currency | string | The currency code. | No |
-| type | string | The withdrawal type | No |
-| sum | double | The withdrawal sum. | No |
-| fee | double | The exchange fee. | No |
-| blockchain_txid | string | The withdrawal transaction id. | No |
-| rid | string | The beneficiary ID or wallet address on the Blockchain. | No |
-| state | string | The withdrawal state. | No |
-| confirmations | integer | Number of confirmations. | No |
-| note | string | Withdraw note. | No |
-| created_at | string | The datetimes for the withdrawal. | No |
-| updated_at | string | The datetimes for the withdrawal. | No |
-| completed_at | string | The datetime when withdraw was completed. | No |
-| member | string | The member id. | No |
-| account | string | The account code. | No |
-| block_number | integer | The withdrawal block_number. | No |
-| amount | double | The withdrawal amount. | No |
-| tid | string | Withdraw tid. | No |
